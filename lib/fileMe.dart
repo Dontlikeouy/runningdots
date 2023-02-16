@@ -74,67 +74,48 @@ void deleteFile(String nameFile) {
   }
 }
 
-List<Image> resizeImage(String pathImg, String nameImg, int width, int height) {
+class NewImage {
+  late img.Image image;
+  late Image adaptedImage;
+}
+
+NewImage resizeImage(String pathImg, String nameImg, int width, int height) {
   String typeImg = nameImg.split('.').last.toLowerCase();
   img.Image? image;
-  List<Image> images = [];
+  NewImage newImage = NewImage();
   switch (typeImg) {
     case 'png':
       image = img.decodePng(File(pathImg).readAsBytesSync());
-
       break;
+
     case 'jpg':
       image = img.decodeJpg(File(pathImg).readAsBytesSync());
-
       break;
-    case 'gif':
+
+    default:
       image = img.decodeGif(File(pathImg).readAsBytesSync());
-
       break;
-    default:
   }
+  //image = img.copyCrop(image!, x: 0, y: 0, width: width, height: width);
+
   image = img.copyResize(image!, width: width, height: height);
-  Stopwatch stopwatch = Stopwatch();
-  stopwatch.start();
-  test2(image);
-  stopwatch.stop();
-  print(
-      "Elapsed ${stopwatch.elapsed} Microseconds: ${stopwatch.elapsedMicroseconds} Milliseconds: ${stopwatch.elapsedMilliseconds} Ticks: ${stopwatch.elapsedTicks}");
-
-  switch (typeImg) {
-    case 'png':
-      images.add(Image.memory(img.encodePng(image)));
-      break;
-
-    case 'jpg':
-      images.add(Image.memory(img.encodeJpg(image)));
-
-      break;
-
-    default:
-      //'gif'
-      images.add(Image.memory(img.encodeGif(image)));
-
-      break;
-  }
+  newImage.image = image;
   image = img.copyResize(image, width: 1000);
+
   switch (typeImg) {
     case 'png':
-      images.add(Image.memory(img.encodePng(image)));
+      newImage.adaptedImage = Image.memory(img.encodePng(image));
+
       break;
-
     case 'jpg':
-      images.add(Image.memory(img.encodeJpg(image)));
-
+      newImage.adaptedImage = Image.memory(img.encodeJpg(image));
       break;
 
     default:
-      //'gif'
-      images.add(Image.memory(img.encodeGif(image)));
-
+      newImage.adaptedImage = Image.memory(img.encodeGif(image));
       break;
   }
-  return images;
+  return newImage;
 }
 
 void test(img.Image image) {

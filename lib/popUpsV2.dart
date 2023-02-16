@@ -7,10 +7,21 @@ import 'package:runningdots/widget/comboButtons.dart';
 import 'fileMe.dart';
 
 Future<int?> push(BuildContext context, Widget popUp) async {
-  return await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => popUp),
+  if (context.mounted) {
+    return await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => popUp),
+    );
+  }
+}
+
+void createSnackBar(BuildContext context, String text) {
+  SnackBar snackBar = SnackBar(
+    duration: const Duration(seconds: 3),
+    content: Text(text),
   );
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
 Widget createDescription(String description) {

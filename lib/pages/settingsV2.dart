@@ -18,8 +18,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  MainInfoAboutMatrix mainInfo = MainInfoAboutMatrix();
-
   Map<String, String> contentInputText = {
     "Файл": "",
     "Pin": "",
@@ -30,6 +28,7 @@ class _SettingsState extends State<Settings> {
   TextEditingController widthMatrix = TextEditingController(text: "");
   TextEditingController heightMatrix = TextEditingController(text: "");
   int point1 = 0, point2 = -1;
+  MainMatrix mainMatrix = MainMatrix();
   late MatrixInfo matrixInfo;
 
   @override
@@ -57,11 +56,11 @@ class _SettingsState extends State<Settings> {
                 String tText = readTextInFile(files[id]);
                 if (tText != '') {
                   // try {
-                  mainInfo = MainInfoAboutMatrix.fromJson(
+                  mainMatrix = MainMatrix.fromJson(
                     jsonDecode(tText),
                   );
                 } else {
-                  mainInfo = MainInfoAboutMatrix();
+                  mainMatrix = MainMatrix();
                 }
 
                 setState(
@@ -77,7 +76,7 @@ class _SettingsState extends State<Settings> {
                 if (contentInputText["Файл"] != "") {
                   if (existsFile(contentInputText["Файл"]!) == false) {
                     contentInputText["Файл"] = "";
-                    mainInfo = MainInfoAboutMatrix();
+                    mainMatrix = MainMatrix();
                     setState(() {
                       contentInputText["Файл"] = "";
                     });
@@ -206,23 +205,17 @@ class _SettingsState extends State<Settings> {
           ),
           MyButton.fill(
             () {
-              for (var element in contentInputText.values) {
-                if (element == "") {
-                  push(
-                    context,
-                    const PopUpInfo(
-                      "Оповещение",
-                      "Одно из полей является пустым.",
-                    ),
-                  );
+              for (var element in contentInputText.entries) {
+                if (element.value == "") {
+                  createSnackBar(context, "Поле '${element.key}' не заполнено");
                   return;
                 }
               }
               if (widthMatrix.text == "" || heightMatrix.text == "") return;
               if (contentInputText["ПоВертик"] == 'Пусто' &&
                   contentInputText["ПоГориз"] == 'Пусто') {
-                if (mainInfo.location.isEmpty) {
-                  mainInfo.location.add([]);
+                if (mainMatrix.location.isEmpty) {
+                  mainMatrix.location.add([]);
                 } else {
                   push(
                     context,
@@ -234,7 +227,7 @@ class _SettingsState extends State<Settings> {
                   return;
                 }
               } else {
-                if (mainInfo.location.isEmpty) {
+                if (mainMatrix.location.isEmpty) {
                   push(
                     context,
                     const PopUpInfo(
@@ -245,21 +238,20 @@ class _SettingsState extends State<Settings> {
                   return;
                 }
               }
-
-              if (!mainInfo.pointOnPin.containsKey(contentInputText['Pin'])) {
-                mainInfo.pointOnPin
-                    .addAll({contentInputText['Pin']!: Point.empty()});
+              int pin = int.parse(contentInputText['Pin']!);
+              if (!mainMatrix.pointOnPin.containsKey(pin)) {
+                mainMatrix.pointOnPin.addAll({pin: Point.empty()});
               }
 
               int widthMatrixInt = int.parse(widthMatrix.text),
                   heightMatrixInt = int.parse(heightMatrix.text);
 
-              mainInfo.pointOnPin[contentInputText['Pin']]!.point2 =
+              mainMatrix.pointOnPin[pin]!.end =
                   widthMatrixInt * heightMatrixInt +
-                      mainInfo.pointOnPin[contentInputText['Pin']]!.point2;
+                      mainMatrix.pointOnPin[pin]!.end;
 
-              mainInfo.pointOnPin[contentInputText['Pin']]!.point1 =
-                  mainInfo.pointOnPin[contentInputText['Pin']]!.point2 -
+              mainMatrix.pointOnPin[pin]!.begin =
+                  mainMatrix.pointOnPin[pin]!.end -
                       (widthMatrixInt * heightMatrixInt - 1);
 
               matrixInfo = MatrixInfo(
@@ -267,29 +259,29 @@ class _SettingsState extends State<Settings> {
                   int.parse(widthMatrix.text),
                   int.parse(heightMatrix.text),
                 ),
-                int.parse(contentInputText["Pin"]!),
-                Point(mainInfo.pointOnPin[contentInputText['Pin']]!.point1,
-                    mainInfo.pointOnPin[contentInputText['Pin']]!.point2),
+                pin,
+                Point(mainMatrix.pointOnPin[pin]!.begin,
+                    mainMatrix.pointOnPin[pin]!.end),
                 contentInputText["Вар"]!,
               );
 
               switch (contentInputText["ПоВертик"]) {
                 case 'Сверху':
                   {
-                    if (mainInfo.row - 1 < 0) {
-                      mainInfo.location.insert(mainInfo.row, []);
+                    if (mainMatrix.row - 1 < 0) {
+                      mainMatrix.location.insert(mainMatrix.row, []);
                     } else {
-                      mainInfo.row--;
+                      mainMatrix.row--;
                     }
                     break;
                   }
                 case 'Снизу':
                   {
-                    mainInfo.row++;
+                    mainMatrix.row++;
 
-                    if (mainInfo.location.length <= mainInfo.row) {
-                      mainInfo.location.add([]);
-                      mainInfo.column = 0;
+                    if (mainMatrix.location.length <= mainMatrix.row) {
+                      mainMatrix.location.add([]);
+                      mainMatrix.column = 0;
                     }
 
                     break;
@@ -299,46 +291,45 @@ class _SettingsState extends State<Settings> {
               switch (contentInputText["ПоГориз"]) {
                 case 'Пусто':
                   {
-                    mainInfo.location[mainInfo.row]
-                        .insert(mainInfo.column, matrixInfo);
+                    mainMatrix.location[mainMatrix.row]
+                        .insert(mainMatrix.column, matrixInfo);
 
                     break;
                   }
                 case 'Слева':
                   {
-                    if (mainInfo.column - 1 < 0) {
-                      mainInfo.location[mainInfo.row]
-                          .insert(mainInfo.column, matrixInfo);
+                    if (mainMatrix.column - 1 < 0) {
+                      mainMatrix.location[mainMatrix.row]
+                          .insert(mainMatrix.column, matrixInfo);
                     } else {
-                      mainInfo.column--;
-                      mainInfo.location[mainInfo.row]
-                          .insert(mainInfo.column, matrixInfo);
+                      mainMatrix.column--;
+                      mainMatrix.location[mainMatrix.row]
+                          .insert(mainMatrix.column, matrixInfo);
                     }
 
                     break;
                   }
                 case 'Справа':
                   {
-                    mainInfo.location[mainInfo.row].add(matrixInfo);
-                    mainInfo.column++;
+                    mainMatrix.location[mainMatrix.row].add(matrixInfo);
+                    mainMatrix.column++;
 
                     break;
                   }
               }
-              if (mainInfo.columnMax < mainInfo.location[mainInfo.row].length) {
-                mainInfo.sizeMatrix.width += matrixInfo.sizeMatrix.width;
-                mainInfo.columnMax = mainInfo.location[mainInfo.row].length;
+              if (mainMatrix.columnMax <
+                  mainMatrix.location[mainMatrix.row].length) {
+                mainMatrix.sizeMatrix.width += matrixInfo.sizeMatrix.width;
+                mainMatrix.columnMax =
+                    mainMatrix.location[mainMatrix.row].length;
               }
-              if (mainInfo.rowMax < mainInfo.location.length) {
-                mainInfo.sizeMatrix.height += matrixInfo.sizeMatrix.height;
-                mainInfo.rowMax = mainInfo.location.length;
+              if (mainMatrix.rowMax < mainMatrix.location.length) {
+                mainMatrix.sizeMatrix.height += matrixInfo.sizeMatrix.height;
+                mainMatrix.rowMax = mainMatrix.location.length;
               }
-              var w = mainInfo.sizeMatrix.width;
-              var h = mainInfo.sizeMatrix.height;
-
               writeTextToFile(
                 contentInputText["Файл"]!,
-                jsonEncode(mainInfo.toJson()),
+                jsonEncode(mainMatrix.toJson()),
               );
             },
             "Сохранить/Добавить",

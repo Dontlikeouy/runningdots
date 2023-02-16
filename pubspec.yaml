@@ -38,6 +38,7 @@ dependencies:
   flutter_svg: ^1.1.6
   permission_handler: ^10.2.0
   flutter_bluetooth_serial: ^0.4.0
+  async: ^2.10.0
   
 dev_dependencies:
   flutter_test:

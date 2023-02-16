@@ -37,34 +37,34 @@ class MatrixInfo {
 }
 
 class Point {
-  int point1 = 0, point2 = -1;
+  int begin = 0, end = -1;
 
   Point.empty();
-  Point(this.point1, this.point2);
+  Point(this.begin, this.end);
 
   Point.fromJson(Map<String, dynamic> json) {
-    point1 = json['point1'];
-    point2 = json['point2'];
+    begin = json['begin'];
+    end = json['end'];
   }
 
-  Map<String, dynamic> toJson() => {
-        'point1': point1,
-        'point2': point2,
+  Map<String, int> toJson() => {
+        'begin': begin,
+        'end': end,
       };
 }
 
-class MainInfoAboutMatrix {
-  Map<String, Point> pointOnPin = {};
+class MainMatrix {
+  Map<int, Point> pointOnPin = {};
   int row = 0, column = 0;
   int rowMax = 0, columnMax = 0;
   SizeMatrix sizeMatrix = SizeMatrix(0, 0);
 
   late List<List<MatrixInfo>> location = [];
-  MainInfoAboutMatrix();
-  MainInfoAboutMatrix.fromJson(Map<String, dynamic> json) {
-    pointOnPin = <String, Point>{
+  MainMatrix();
+  MainMatrix.fromJson(Map<String, dynamic> json) {
+    pointOnPin = <int, Point>{
       for (var element in (json['pointOnPin'] as Map).entries)
-        element.key: Point.fromJson(element.value),
+        int.parse(element.key): Point.fromJson(element.value),
     };
 
     for (int i = 0; i < (json['location'] as List).length; i++) {
@@ -83,7 +83,7 @@ class MainInfoAboutMatrix {
   Map<String, dynamic> toJson() => {
         'pointOnPin': <String, dynamic>{
           for (var element in pointOnPin.entries)
-            element.key: element.value.toJson()
+            element.key.toString(): element.value.toJson()
         },
         'location': [
           for (int i = 0; i < location.length; i++)
