@@ -47,13 +47,13 @@ class _SettingsState extends State<Settings> {
                   builder: (context) => PopUpAdd(
                     "Выбор/создание файла настроек",
                     "Добавить новый файл",
-                    getFiles(),
+                    getJson(),
                   ),
                 ),
               );
-              List<String> files = getFiles();
+              List<String> files = getJson();
               if (id != null) {
-                String tText = readTextInFile(files[id]);
+                String tText = readJson(files[id]);
                 if (tText != '') {
                   // try {
                   mainMatrix = MainMatrix.fromJson(
@@ -74,7 +74,7 @@ class _SettingsState extends State<Settings> {
                 );
               } else if (id == null) {
                 if (contentInputText["Файл"] != "") {
-                  if (existsFile(contentInputText["Файл"]!) == false) {
+                  if (existsJson(contentInputText["Файл"]!) == false) {
                     contentInputText["Файл"] = "";
                     mainMatrix = MainMatrix();
                     setState(() {
@@ -212,8 +212,7 @@ class _SettingsState extends State<Settings> {
                 }
               }
               if (widthMatrix.text == "" || heightMatrix.text == "") return;
-              if (contentInputText["ПоВертик"] == 'Пусто' &&
-                  contentInputText["ПоГориз"] == 'Пусто') {
+              if (contentInputText["ПоВертик"] == 'Пусто' && contentInputText["ПоГориз"] == 'Пусто') {
                 if (mainMatrix.location.isEmpty) {
                   mainMatrix.location.add([]);
                 } else {
@@ -243,16 +242,11 @@ class _SettingsState extends State<Settings> {
                 mainMatrix.pointOnPin.addAll({pin: Point.empty()});
               }
 
-              int widthMatrixInt = int.parse(widthMatrix.text),
-                  heightMatrixInt = int.parse(heightMatrix.text);
+              int widthMatrixInt = int.parse(widthMatrix.text), heightMatrixInt = int.parse(heightMatrix.text);
 
-              mainMatrix.pointOnPin[pin]!.end =
-                  widthMatrixInt * heightMatrixInt +
-                      mainMatrix.pointOnPin[pin]!.end;
+              mainMatrix.pointOnPin[pin]!.end = widthMatrixInt * heightMatrixInt + mainMatrix.pointOnPin[pin]!.end;
 
-              mainMatrix.pointOnPin[pin]!.begin =
-                  mainMatrix.pointOnPin[pin]!.end -
-                      (widthMatrixInt * heightMatrixInt - 1);
+              mainMatrix.pointOnPin[pin]!.begin = mainMatrix.pointOnPin[pin]!.end - (widthMatrixInt * heightMatrixInt - 1);
 
               matrixInfo = MatrixInfo(
                 SizeMatrix(
@@ -260,8 +254,7 @@ class _SettingsState extends State<Settings> {
                   int.parse(heightMatrix.text),
                 ),
                 pin,
-                Point(mainMatrix.pointOnPin[pin]!.begin,
-                    mainMatrix.pointOnPin[pin]!.end),
+                Point(mainMatrix.pointOnPin[pin]!.begin, mainMatrix.pointOnPin[pin]!.end),
                 contentInputText["Вар"]!,
               );
 
@@ -291,20 +284,17 @@ class _SettingsState extends State<Settings> {
               switch (contentInputText["ПоГориз"]) {
                 case 'Пусто':
                   {
-                    mainMatrix.location[mainMatrix.row]
-                        .insert(mainMatrix.column, matrixInfo);
+                    mainMatrix.location[mainMatrix.row].insert(mainMatrix.column, matrixInfo);
 
                     break;
                   }
                 case 'Слева':
                   {
                     if (mainMatrix.column - 1 < 0) {
-                      mainMatrix.location[mainMatrix.row]
-                          .insert(mainMatrix.column, matrixInfo);
+                      mainMatrix.location[mainMatrix.row].insert(mainMatrix.column, matrixInfo);
                     } else {
                       mainMatrix.column--;
-                      mainMatrix.location[mainMatrix.row]
-                          .insert(mainMatrix.column, matrixInfo);
+                      mainMatrix.location[mainMatrix.row].insert(mainMatrix.column, matrixInfo);
                     }
 
                     break;
@@ -317,20 +307,19 @@ class _SettingsState extends State<Settings> {
                     break;
                   }
               }
-              if (mainMatrix.columnMax <
-                  mainMatrix.location[mainMatrix.row].length) {
+              if (mainMatrix.columnMax < mainMatrix.location[mainMatrix.row].length) {
                 mainMatrix.sizeMatrix.width += matrixInfo.sizeMatrix.width;
-                mainMatrix.columnMax =
-                    mainMatrix.location[mainMatrix.row].length;
+                mainMatrix.columnMax = mainMatrix.location[mainMatrix.row].length;
               }
               if (mainMatrix.rowMax < mainMatrix.location.length) {
                 mainMatrix.sizeMatrix.height += matrixInfo.sizeMatrix.height;
                 mainMatrix.rowMax = mainMatrix.location.length;
               }
-              writeTextToFile(
+              writeJson(
                 contentInputText["Файл"]!,
                 jsonEncode(mainMatrix.toJson()),
               );
+              createSnackBar(context, "Матрица добавлена");
             },
             "Сохранить/Добавить",
             color: purple[1],

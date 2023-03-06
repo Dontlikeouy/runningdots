@@ -37,12 +37,13 @@ class MatrixInfo {
 }
 
 class Point {
-  int begin = 0, end = -1;
+  int begin = 0, end = 0;
 
   Point.empty();
   Point(this.begin, this.end);
 
   Point.fromJson(Map<String, dynamic> json) {
+    
     begin = json['begin'];
     end = json['end'];
   }

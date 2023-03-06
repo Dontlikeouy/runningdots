@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -30,6 +31,8 @@ class Visualizer extends StatefulWidget {
   State<Visualizer> createState() => _VisualizerState();
 }
 
+class Disconnect implements Exception {}
+
 class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMixin<Visualizer> {
   static BluetoothConnection? connection;
 
@@ -37,70 +40,50 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
   late FilePickerResult? filePickerResult;
   Map<String, String> contentInputText = {
     "Файл": "",
-    "Изображение": "",
+    "Папка с изображениями": "",
   };
-  late img.Image image;
-  int oldPin = 0, oldPoint = 0;
-  bool isLastRGB = false;
+  int? oldPin = 0;
+  int oldPoint = 0;
+  bool isLastRGB = false, isNewMatrix = false;
   int point = 0;
   String output = "";
-  Timer? timer;
 
   Completer completer = Completer();
   late StreamSubscription read;
   bool close = false;
 
   Future<void> compressFrame(
-    int pin,
-    int size, [
-    img.Pixel? pixel,
-  ]) async {
-    if (pin != oldPin) {
-      if (isLastRGB == true) {
+    img.Pixel pixel,
+  ) async {
+    if (!(pixel.r <= 20 && pixel.g <= 20 && pixel.b <= 20) && pixel.a != 0) {
+      await addToOutput((((pixel.r / 255) * 100).round()) + 128);
+      if (isNewMatrix == true) {
         await addToOutput(254);
+        isNewMatrix = false;
       }
-      await splitInt(pin);
-      await splitInt(size, Part.second, Part.first);
-      oldPin = pin;
-    }
+      //print("$point - $oldPoint");
+      int result = point - oldPoint;
+      oldPoint = point;
+      if (result != 1) {
+        await splitInt(result);
+      }
+      await addToOutput((((pixel.g / 255) * 100).round()) + 128);
 
-    if (pixel != null) {
-      isLastRGB = true;
-      if (!(pixel.r == 0 && pixel.g == 0 && pixel.b == 0)) {
-        await addToOutput((((pixel.r / 255) * 100).round()) + 128);
-        //print("$point - $oldPoint");
-        int result = point - oldPoint;
-        oldPoint = point;
-        //if (result != 1) {
-        await splitInt(point);
-        //}
-        await addToOutput((((pixel.g / 255) * 100).round()) + 128);
-        await addToOutput((((pixel.b / 255) * 100).round()) + 128);
-      }
-    } else {
-      isLastRGB = false;
+      await addToOutput((((pixel.b / 255) * 100).round()) + 128);
     }
   }
 
-  Future<void> check([int charlimit = 90]) async {
+  Future<void> check([int charlimit = 399]) async {
     if (output.length >= charlimit) {
+      await Future(() => completer.future);
       close = false;
       output += String.fromCharCode(32);
-      timer = Timer(const Duration(minutes: 15), () {
-        print("timeout");
-        connection?.close();
-        completer.complete();
-        close = true;
-      });
 
-      read.resume();
       connection?.output.add(latin1.encode(output.substring(0, charlimit + 1)));
-      await Future(() => completer.future);
-      output = output.substring(charlimit + 1, output.length);
+
       completer = Completer();
-      if (close == true) {
-        throw ("timeout");
-      }
+      //await Future.delayed(const Duration(microseconds: 900));
+      output = output.substring(charlimit + 1, output.length);
     }
   }
 
@@ -170,13 +153,13 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
                 PopUp(
                   "Выбор файла настроек",
                   "Файл настроек",
-                  getFiles(),
+                  getJson(),
                 ),
               );
-              List<String> files = getFiles();
+              List<String> files = getJson();
 
               if (id != null) {
-                String tText = readTextInFile(files[id]);
+                String tText = readJson(files[id]);
                 if (tText != "") {
                   mainInfo = MainMatrix.fromJson(
                     jsonDecode(tText),
@@ -200,48 +183,16 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
             },
           ),
           InputText(
-            "Изображение: 'png', 'jpg', 'gif'",
-            contentInputText["Изображение"]!,
+            "Папка с изображениями 'png'",
+            contentInputText["Папка с изображениями"]!,
             () async {
-              filePickerResult = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['png', 'jpg', 'gif']);
-              if (filePickerResult != null) {
-                setState(
-                  () {
-                    contentInputText["Изображение"] = filePickerResult!.files.last.name;
-                  },
-                );
+              String? dir = await FilePicker.platform.getDirectoryPath();
+              if (dir != null) {
+                setState(() {
+                  contentInputText["Папка с изображениями"] = dir;
+                });
               }
             },
-          ),
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: MyButton.fill(
-              () {
-                for (var element in contentInputText.entries) {
-                  if (element.value == "") {
-                    createSnackBar(context, "Поле '${element.key}' не заполнено");
-                    return;
-                  }
-                }
-
-                NewImage result = resizeImage(
-                  filePickerResult!.files.first.path!,
-                  filePickerResult!.files.first.name,
-                  mainInfo.sizeMatrix.width,
-                  mainInfo.sizeMatrix.height,
-                );
-                image = result.image;
-                push(
-                  context,
-                  PopUpOneImage(
-                    "Предпросмотр изображения",
-                    result.adaptedImage,
-                  ),
-                );
-              },
-              "Предпросмотр",
-              color: purple[1],
-            ),
           ),
           MyButton.fill(
             () async {
@@ -272,10 +223,18 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
                     ],
                   ),
                 );
-                if (id != null) {
-                  if (connection != null && connection!.isConnected == true) {
+                if (connection?.isConnected == true) {
+                  String result = await push(
+                    context,
+                    const PopUpQuestion("Оповещение", "В данный момент передается изображение на матрицу. Прервать?"),
+                  );
+                  if (result == "Да") {
                     connection!.close();
                   }
+                  return;
+                }
+
+                if (id != null) {
                   try {
                     createSnackBar(context, "Идёт подключеник к ${bondedDevices[id].name ?? bondedDevices[id].address} ");
                     connection = await BluetoothConnection.toAddress(bondedDevices[id].address);
@@ -285,95 +244,100 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
                   }
 
                   createSnackBar(context, "Подключение установлено с ${bondedDevices[id].name ?? bondedDevices[id].address} ");
-                  oldPin = 0;
+                  oldPin = null;
                   oldPoint = 0;
                   isLastRGB = false;
+                  isNewMatrix = false;
                   point = 0;
                   output = "";
-                  Timer? timer2;
-                  read = connection!.input!.listen((Uint8List data) {
-                    for (var element in data) {
-                      print("$element - ${String.fromCharCode(element)}");
-                    }
+                  completer = Completer();
+                  completer.complete();
 
-                    // timer2?.cancel();
-                    // timer2 = Timer(
-                    //   const Duration(milliseconds: 15),
-                    //   () {
-                    timer?.cancel();
+                  read = connection!.input!.listen((Uint8List data) {
                     completer.complete();
-                    read.pause();
-                    //   },
-                    // );
                   }, onDone: () {
-                    createSnackBar(context, "Подключение разорвано с ${bondedDevices[id].name ?? bondedDevices[id].address} ");
+                    createSnackBar(context, "Передача завершена с ${bondedDevices[id].name ?? bondedDevices[id].address} ");
                   }, onError: (error) {
                     createSnackBar(context, "Произошла ошибка при считывании - подключение разорвано с ${bondedDevices[id].name ?? bondedDevices[id].address} ");
                   });
+                  if (Platform.isAndroid && await Permission.manageExternalStorage.request().isGranted == false) {
+                    createSnackBar(context, "Не удалось получить разрешение.");
+                    return;
+                  }
 
                   try {
-                    Set<int> allPin = mainInfo.pointOnPin.keys.toSet();
                     await addToOutput(255);
+                    Directory savePath = Directory(contentInputText["Папка с изображениями"]!);
+                    int cointItem = await savePath.list(recursive: false, followLinks: false).length;
+                    List<img.Image?> frame1 = [];
+                    for (var i = 1; i <= cointItem; i++) {
+                      frame1.add(img.decodePng(await File("${savePath.path}/$i.png").readAsBytes()));
+                    }
 
-                    for (var i = 0; i < image.frames.length; i++) {
-                      allPin = mainInfo.pointOnPin.keys.toSet();
+                    for (var i = 1; i <= cointItem; i++) {
+                      img.Image? frame = frame1[i];
 
-                      img.Image frame = image.getFrame(i);
+                      if (frame != null) {
+                        int x = 0;
+                        int y = 0;
+                        int height = 0;
+                        int width = 0;
 
-                      int x = 0;
-                      int y = 0;
-                      int height = 0;
-                      int width = 0;
-
-                      for (int column = 0; column < mainInfo.location.length; column++) {
-                        for (int row = 0; row < mainInfo.location[column].length; row++) {
-                          oldPoint = 0;
-                          point = mainInfo.location[column][row].point.begin;
-                          int pin = mainInfo.location[column][row].pin;
-                          int size = mainInfo.pointOnPin[pin]!.end;
-                          height = mainInfo.location[column][row].sizeMatrix.height;
-                          width = mainInfo.location[column][row].sizeMatrix.width;
-
-                          if (allPin.contains(pin)) {
-                            allPin.remove(pin);
-                          }
-                          for (int nY = y; nY < y + height; nY++) {
-                            if (nY % 2 == 0) {
-                              for (int nX = x + width - 1; nX >= x; nX--) {
-                                await compressFrame(pin, size, frame.getPixel(nX, nY));
+                        for (int column = 0; column < mainInfo.location.length; column++) {
+                          for (int row = 0; row < mainInfo.location[column].length; row++) {
+                            oldPoint = 0;
+                            point = mainInfo.location[column][row].point.begin;
+                            int pin = mainInfo.location[column][row].pin;
+                            int size = mainInfo.pointOnPin[pin]!.end;
+                            height = mainInfo.location[column][row].sizeMatrix.height;
+                            width = mainInfo.location[column][row].sizeMatrix.width;
+                            if (pin != oldPin || oldPin == null) {
+                              if (oldPin != null) {
                                 await addToOutput(254);
-
-                                point++;
                               }
-                            } else {
-                              for (int nX = x; nX < x + width; nX++) {
-                                await compressFrame(pin, size, frame.getPixel(nX, nY));
-                                await addToOutput(254);
+                              await splitInt(pin);
+                              await splitInt(size, Part.second, Part.first);
+                              oldPin = pin;
+                            }
 
-                                point++;
+                            for (int nY = y; nY < y + height; nY++) {
+                              if (nY % 2 == 0) {
+                                for (int nX = x + width - 1; nX >= x; nX--) {
+                                  await compressFrame(frame.getPixel(nX, nY));
+
+                                  point++;
+                                }
+                              } else {
+                                for (int nX = x; nX < x + width; nX++) {
+                                  await compressFrame(frame.getPixel(nX, nY));
+
+                                  point++;
+                                }
                               }
                             }
+
+                            isNewMatrix = true;
+                            x += width;
                           }
-
-                          await addToOutput(254);
-                          x += width;
+                          x = 0;
+                          y += height;
                         }
-                        x = 0;
-                        y += height;
-                      }
 
-                      for (var pin in allPin) {
-                        int size = mainInfo.pointOnPin[pin]!.end;
-                        await compressFrame(pin, size);
                         await addToOutput(254);
+                        // for (var pin in allPin) {
+                        //   int size = mainInfo.pointOnPin[pin]!.end;
+                        //   await compressFrame(pin, size);
+                        //   await addToOutput(254);
+                        // }
                       }
                     }
-                    await check(output.length);
-                  } catch (timeout) {
-                    createSnackBar(context, "Устройство ${bondedDevices[id].name ?? bondedDevices[id].address} не отвечает");
+                    if (output.isNotEmpty) {
+                      await check(output.length);
+                    }
+                  } catch (e) {
+                    createSnackBar(context, "Произошла ошибка при передачи данных на ${bondedDevices[id].name ?? bondedDevices[id].address}\n$e");
                   }
-                  timer?.cancel();
-                  read.resume();
+
                   connection?.close();
                 }
               }
@@ -387,46 +351,8 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
   }
 }
 
-bool cancelled = false;
-CancelableFuture(Duration duration, void Function() callback) {
-  Future<void>.delayed(duration, () {
-    if (!cancelled) {
-      callback();
-    }
-  });
-}
-
-void cancel() {
-  cancelled = true;
-}
-
-Future<dynamic> _myFuture() async {
-  await Future.delayed(const Duration(seconds: 10));
-  return;
-}
-
-void determinePoint(img.Image frame, int x, int y) {
-  img.Pixel pixel = frame.getPixel(x, y);
-}
 
 
 
 
-// void _sendMessage(String text) async {
-//   text = text.trim();
 
-//   connection!.output.add(Uint8List.fromList(utf8.encode("$text\r\n")));
-//   await connection!.output.allSent;
-
-//   connection.input.listen((Uint8List data) {
-//     print('Data incoming: ${ascii.decode(data)}');
-//     connection.output.add(data); // Sending data
-
-//     if (ascii.decode(data).contains('!')) {
-//       connection.finish(); // Closing connection
-//       print('Disconnecting by local host');
-//     }
-//   }).onDone(() {
-//     print('Disconnected by remote request');
-//   });
-// }

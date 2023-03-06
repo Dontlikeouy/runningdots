@@ -6,13 +6,14 @@ import 'package:runningdots/widget/comboButtons.dart';
 
 import 'fileMe.dart';
 
-Future<int?> push(BuildContext context, Widget popUp) async {
+Future<dynamic> push(BuildContext context, Widget popUp) async {
   if (context.mounted) {
     return await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => popUp),
     );
   }
+  return null;
 }
 
 void createSnackBar(BuildContext context, String text) {
@@ -39,8 +40,7 @@ Widget createDescription(String description) {
   );
 }
 
-Widget createPopUp(BuildContext context, String title, Widget mainWidget,
-    [Widget? widget]) {
+Widget createPopUp(BuildContext context, String title, Widget mainWidget, [Widget? widget]) {
   return SafeArea(
     child: Scaffold(
       body: Container(
@@ -191,38 +191,26 @@ class _PopUpAddState extends State<PopUpAdd> {
 
                   if (tText != '') {
                     if (RegExp(r'[\\/:*?"<>]').firstMatch(tText) != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PopUpInfo(
-                            "Предупреждение",
-                            'Имя файла не должно содеражать:\n/ \\ : * ? " < > ',
-                          ),
-                        ),
-                      );
+                      createSnackBar(context, 'Нельзя использовать:\n/ \\ : * ? " < > ');
+
                       return;
                     }
-                    if (existsFile(newFile.text) == true) {
-                      String result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PopUpQuestion(
-                                  "Предупреждение",
-                                  "Данный файл существует. Пересоздать?"),
-                            ),
-                          ) ??
-                          '';
+                    if (existsJson(newFile.text) == true) {
+                      String result = await push(
+                        context,
+                        const PopUpQuestion("Предупреждение", "Данный файл существует. Пересоздать?"),
+                      );
 
                       if (result == 'Нет') {
                         return;
                       }
                     }
 
-                    createFile(newFile.text);
+                    createJson(newFile.text);
                     newFile.value = const TextEditingValue(text: "");
 
                     setState(() {
-                      widget.values = getFiles();
+                      widget.values = getJson();
                     });
                   }
                 },
@@ -246,18 +234,13 @@ class _PopUpAddState extends State<PopUpAdd> {
                         Navigator.pop(context, i);
                       },
                       () async {
-                        String result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PopUpQuestion(
-                                    "Предупреждение",
-                                    "Данный файл будет удалён безвозратно. Удалить?"),
-                              ),
-                            ) ??
-                            '';
+                        String result = await push(
+                          context,
+                          const PopUpQuestion("Предупреждение", "Данный файл будет удалён безвозратно. Удалить?"),
+                        );
 
                         if (result == 'Да') {
-                          deleteFile(widget.values[i]);
+                          deleteJson(widget.values[i]);
                           setState(() {
                             widget.values.removeAt(i);
                           });

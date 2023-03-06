@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:runningdots/pages/settingsV2.dart';
+import 'package:runningdots/pages/settingsImage.dart';
 import 'package:runningdots/pages/visualizerV2.dart';
 import 'package:runningdots/style/color.dart';
 
@@ -11,7 +11,6 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  
   const MyApp({super.key});
   @override
   State<MyApp> createState() => _MyApp();
@@ -20,7 +19,7 @@ class MyApp extends StatefulWidget {
 class _MyApp extends State<MyApp> {
   @override
   void initState() {
-    getPath();
+    getGlobalPath();
 
     super.initState();
   }
@@ -30,13 +29,14 @@ class _MyApp extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: DefaultTabController(
-        length: 2,
+        length: 3,
         child: SafeArea(
           child: Scaffold(
             backgroundColor: purple[0],
             body: Column(
               children: [
                 Container(
+                  width: double.maxFinite,
                   decoration: BoxDecoration(
                     color: purple[1],
                     border: Border(
@@ -48,6 +48,7 @@ class _MyApp extends State<MyApp> {
                   ),
                   child: TabBar(
                     labelPadding: const EdgeInsets.all(10),
+                    isScrollable: true,
                     unselectedLabelColor: textColor[0],
                     labelStyle: const TextStyle(
                       fontSize: 15,
@@ -59,6 +60,7 @@ class _MyApp extends State<MyApp> {
                     tabs: const [
                       Text("Настройки"),
                       Text("Визуализатор"),
+                      Text("Изменить размер"),
                     ],
                   ),
                 ),
@@ -66,8 +68,8 @@ class _MyApp extends State<MyApp> {
                   child: TabBarView(
                     children: [
                       Container(padding: const EdgeInsets.all(10), child: const Settings()),
-                      Container(
-                          padding: const EdgeInsets.all(10), child: const Visualizer()),
+                      Container(padding: const EdgeInsets.all(10), child: const Visualizer()),
+                      Container(padding: const EdgeInsets.all(10), child: const SettingsImage()),
                     ],
                   ),
                 ),
