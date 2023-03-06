@@ -44,4 +44,5 @@ app.*.map.json
 /android/app/release
 android/app/build.gradle
 upload-keystore.jks
+/android/app/build.gradle
 android/app/build.gradle
