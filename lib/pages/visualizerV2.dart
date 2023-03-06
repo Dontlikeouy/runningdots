@@ -57,8 +57,10 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
   ) async {
     if (!(pixel.r <= 20 && pixel.g <= 20 && pixel.b <= 20) && pixel.a != 0) {
       await addToOutput((((pixel.r / 255) * 100).round()) + 128);
+
       if (isNewMatrix == true) {
         await addToOutput(254);
+
         isNewMatrix = false;
       }
       //print("$point - $oldPoint");
@@ -73,7 +75,7 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
     }
   }
 
-  Future<void> check([int charlimit = 399]) async {
+  Future<void> check([int charlimit = 299]) async {
     if (output.length >= charlimit) {
       await Future(() => completer.future);
       close = false;
@@ -269,13 +271,9 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
                     await addToOutput(255);
                     Directory savePath = Directory(contentInputText["Папка с изображениями"]!);
                     int cointItem = await savePath.list(recursive: false, followLinks: false).length;
-                    List<img.Image?> frame1 = [];
-                    for (var i = 1; i <= cointItem; i++) {
-                      frame1.add(img.decodePng(await File("${savePath.path}/$i.png").readAsBytes()));
-                    }
 
                     for (var i = 1; i <= cointItem; i++) {
-                      img.Image? frame = frame1[i];
+                      img.Image? frame = img.decodePng(await File("${savePath.path}/$i.png").readAsBytes());
 
                       if (frame != null) {
                         int x = 0;
@@ -291,12 +289,13 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
                             int size = mainInfo.pointOnPin[pin]!.end;
                             height = mainInfo.location[column][row].sizeMatrix.height;
                             width = mainInfo.location[column][row].sizeMatrix.width;
-                            if (pin != oldPin || oldPin == null) {
+                            if (pin != oldPin) {
                               if (oldPin != null) {
                                 await addToOutput(254);
                               }
                               await splitInt(pin);
                               await splitInt(size, Part.second, Part.first);
+
                               oldPin = pin;
                             }
 
@@ -350,9 +349,3 @@ class _VisualizerState extends State<Visualizer> with AutomaticKeepAliveClientMi
     );
   }
 }
-
-
-
-
-
-

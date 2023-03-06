@@ -246,7 +246,7 @@ class _SettingsState extends State<Settings> {
 
               mainMatrix.pointOnPin[pin]!.end = widthMatrixInt * heightMatrixInt + mainMatrix.pointOnPin[pin]!.end;
 
-              mainMatrix.pointOnPin[pin]!.begin = mainMatrix.pointOnPin[pin]!.end - (widthMatrixInt * heightMatrixInt - 1);
+              mainMatrix.pointOnPin[pin]!.begin = mainMatrix.pointOnPin[pin]!.end - (widthMatrixInt * heightMatrixInt);
 
               matrixInfo = MatrixInfo(
                 SizeMatrix(
