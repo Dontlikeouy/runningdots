@@ -28,8 +28,7 @@ List<String> getFiles() {
     Directory(dir).createSync();
   }
   List<String> tempList = [];
-  for (var entity
-      in Directory(dir).listSync(recursive: true, followLinks: false)) {
+  for (var entity in Directory(dir).listSync(recursive: true, followLinks: false)) {
     String? a = exp.firstMatch(entity.path)?[1];
     if (a != null) {
       tempList.add(a);
@@ -75,14 +74,15 @@ void deleteFile(String nameFile) {
 }
 
 class NewImage {
-  late img.Image image;
-  late Image adaptedImage;
+  NewImage(this.image,this.adaptedImage);
+  img.Image image;
+  Image adaptedImage;
 }
 
 NewImage resizeImage(String pathImg, String nameImg, int width, int height) {
   String typeImg = nameImg.split('.').last.toLowerCase();
   img.Image? image;
-  NewImage newImage = NewImage();
+  Image adaptedImage;
   switch (typeImg) {
     case 'png':
       image = img.decodePng(File(pathImg).readAsBytesSync());
@@ -97,32 +97,28 @@ NewImage resizeImage(String pathImg, String nameImg, int width, int height) {
       break;
   }
   //image = img.copyCrop(image!, x: 0, y: 0, width: width, height: width);
-
   image = img.copyResize(image!, width: width, height: height);
-  newImage.image = image;
-  image = img.copyResize(image, width: 1000);
-
+  img.Image? aImage = img.copyResize(image, width: 1000);
   switch (typeImg) {
     case 'png':
-      newImage.adaptedImage = Image.memory(img.encodePng(image));
+      adaptedImage = Image.memory(img.encodePng(aImage));
 
       break;
     case 'jpg':
-      newImage.adaptedImage = Image.memory(img.encodeJpg(image));
+      adaptedImage = Image.memory(img.encodeJpg(aImage));
       break;
 
     default:
-      newImage.adaptedImage = Image.memory(img.encodeGif(image));
+      adaptedImage = Image.memory(img.encodeGif(aImage));
       break;
   }
-  return newImage;
+  return NewImage(image,adaptedImage);
 }
 
 void test(img.Image image) {
   Iterator<img.Pixel> item = image.getRange(0, 0, 33, 32);
   while (item.moveNext()) {
-    print(
-        "X:${item.current.x} Y:${item.current.y} - R:${item.current.r} G:${item.current.g} B:${item.current.b}");
+    print("X:${item.current.x} Y:${item.current.y} - R:${item.current.r} G:${item.current.g} B:${item.current.b}");
   }
 }
 
@@ -149,7 +145,6 @@ void test2(img.Image image) {
 
 void determinePoint(img.Image image, int x, int y) {
   var item = image.getPixel(x, y);
-  print(
-      "Point:$point X:${item.current.x} Y:${item.current.y} - R:${item.current.r} G:${item.current.g} B:${item.current.b}");
+  print("Point:$point X:${item.current.x} Y:${item.current.y} - R:${item.current.r} G:${item.current.g} B:${item.current.b}");
   point++;
 }
