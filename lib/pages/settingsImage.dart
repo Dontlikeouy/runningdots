@@ -113,8 +113,8 @@ class _SettingsImageState extends State<SettingsImage> with AutomaticKeepAliveCl
                     var result = await resizeImage(
                       savePath.path,
                       entity.path,
-                      mainInfo.sizeMatrix.width,
-                      mainInfo.sizeMatrix.height,
+                      mainInfo.width,
+                      mainInfo.height,
                     );
                     if (result == false) {
                       createSnackBar(context, "Не удалость сохранить\n${entity.path}");

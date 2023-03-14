@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:runningdots/style/color.dart';
 
 class MyTextField extends StatelessWidget {
@@ -41,7 +42,7 @@ class MyTextField extends StatelessWidget {
         focusColor: Colors.grey,
       ),
       style: TextStyle(
-        color: textColor[0],
+        color: colorText[0],
         fontSize: 15,
       ),
     );
@@ -59,22 +60,20 @@ class MyButton extends StatelessWidget {
   Function() function;
   Widget? widget;
 
-  MyButton(this.function, String linkText,
-      {this.color = Colors.transparent, super.key}) {
+  MyButton(this.function, String linkText, {this.color = Colors.transparent, super.key}) {
     widget = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
       child: Text(
         linkText,
         style: TextStyle(
           fontSize: 15,
-          color: textColor[0],
+          color: colorText[0],
           fontWeight: FontWeight.normal,
         ),
       ),
     );
   }
-  MyButton.fill(this.function, String text,
-      {this.color = Colors.transparent, final Color? colorText, super.key}) {
+  MyButton.fill(this.function, String text, {this.color = Colors.transparent, final Color? textColor, super.key}) {
     widget = Padding(
       padding: const EdgeInsets.all(15),
       child: Text(
@@ -82,20 +81,24 @@ class MyButton extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 15,
-          color: colorText ?? textColor[0],
+          color: textColor ?? colorText[0],
           fontWeight: FontWeight.normal,
         ),
       ),
     );
   }
-  MyButton.icon(this.function, Icon icon,
-      {this.color = Colors.transparent, double padding = 12, super.key}) {
+  MyButton.icon(this.function, Icon icon, {this.color = Colors.transparent, double padding = 10, super.key}) {
     widget = Padding(
       padding: EdgeInsets.all(padding),
       child: icon,
     );
   }
-
+  MyButton.iconsvg(this.function, SvgPicture icon, {this.color = Colors.transparent, double padding = 10, super.key}) {
+    widget = Padding(
+      padding: EdgeInsets.all(padding),
+      child: icon,
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Material(

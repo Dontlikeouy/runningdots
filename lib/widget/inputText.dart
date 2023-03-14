@@ -27,7 +27,7 @@ class InputText extends StatelessWidget {
             child: Text(
               title,
               style: TextStyle(
-                color: textColor[0],
+                color: colorText[0],
                 fontSize: 15,
               ),
             ),
@@ -54,7 +54,7 @@ class InputTextMutli extends StatelessWidget {
           child: Text(
             title,
             style: TextStyle(
-              color: textColor[0],
+              color: colorText[0],
               fontSize: 17,
             ),
           ),

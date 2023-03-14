@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:runningdots/json.dart';
 import 'package:runningdots/style/color.dart';
 import 'package:runningdots/widget/buttons.dart';
 import 'package:runningdots/widget/comboButtons.dart';
 
 import 'fileMe.dart';
+import 'widget/colorPicker.dart';
 
 Future<dynamic> push(BuildContext context, Widget popUp) async {
   if (context.mounted) {
@@ -34,7 +38,7 @@ Widget createDescription(String description) {
     child: Text(
       description,
       style: TextStyle(
-        color: textColor[0],
+        color: colorText[0],
       ),
     ),
   );
@@ -68,7 +72,7 @@ Widget createPopUp(BuildContext context, String title, Widget mainWidget, [Widge
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: textColor[0],
+                          color: colorText[0],
                         ),
                       ),
                     ),
@@ -114,7 +118,7 @@ Widget createInfo(String text) {
         text,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: textColor[0],
+          color: colorText[0],
           fontSize: 15,
         ),
       ),
@@ -371,7 +375,7 @@ class _PopUpImageState extends State<PopUpImage> {
                 child: Text(
                   widget.card[now].title,
                   style: TextStyle(
-                    color: textColor[1],
+                    color: colorText[1],
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -425,7 +429,7 @@ class _PopUpImageState extends State<PopUpImage> {
                   Navigator.pop(context, now);
                 },
                 "Выбрать",
-                colorText: textColor[1],
+                textColor: colorText[1],
               ),
             ),
             Expanded(
@@ -479,6 +483,72 @@ class _PopUpOneImageState extends State<PopUpOneImage> {
           fit: BoxFit.contain,
           child: widget.image,
         ),
+      ),
+    );
+  }
+}
+
+class PopUpColor extends StatefulWidget {
+  final String title;
+  final List<ReplaceColor> palette;
+  const PopUpColor(this.title, this.palette, {super.key});
+
+  @override
+  State<PopUpColor> createState() => _PopUpColorState();
+}
+
+class _PopUpColorState extends State<PopUpColor> {
+  double value1 = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return createPopUp(
+      context,
+      widget.title,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (int i = 0; i < widget.palette.length; i++)
+            Material(
+              color: widget.palette[i].color,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: color[3],
+                    width: 1,
+                  ),
+                ),
+                child: InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return ColorPicker("R:");
+                      },
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    alignment: Alignment.bottomLeft,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: color[3],
+                        width: 1,
+                      ),
+                    ),
+                    child: MyButton.iconsvg(
+                      () {},
+                      SvgPicture.file(
+                        //fit: BoxFit.contain,
+                        File('assets/icon/reload.svg'),
+                      ),
+                      color: color[0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

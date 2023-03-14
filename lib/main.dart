@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:runningdots/pages/settingsV2.dart';
+import 'package:runningdots/pages/settings.dart';
 import 'package:runningdots/pages/settingsImage.dart';
-import 'package:runningdots/pages/visualizerV2.dart';
+import 'package:runningdots/pages/visualizer.dart';
 import 'package:runningdots/style/color.dart';
 
 import 'fileMe.dart';
@@ -49,7 +49,7 @@ class _MyApp extends State<MyApp> {
                   child: TabBar(
                     labelPadding: const EdgeInsets.all(10),
                     isScrollable: true,
-                    unselectedLabelColor: textColor[0],
+                    unselectedLabelColor: colorText[0],
                     labelStyle: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
