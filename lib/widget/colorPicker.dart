@@ -7,7 +7,7 @@ class ColorPicker extends StatefulWidget {
   @override
   State<ColorPicker> createState() => _ColorPickerState();
 }
-asd
+
 class _ColorPickerState extends State<ColorPicker> {
   double _value = 0;
   @override
