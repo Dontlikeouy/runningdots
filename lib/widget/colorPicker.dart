@@ -4,11 +4,10 @@ import 'package:runningdots/style/color.dart';
 class ColorPicker extends StatefulWidget {
   final String name;
   const ColorPicker(this.name, {super.key});
-
   @override
   State<ColorPicker> createState() => _ColorPickerState();
 }
-
+asdas
 class _ColorPickerState extends State<ColorPicker> {
   double _value = 0;
   @override
