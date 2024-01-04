@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 const List<Color> colorText = [
   Colors.white,
-  Color(0xffc4c4d8),
+  Color(0xffD7D7D7),
 ];
 
 const List<Color> purple = [
