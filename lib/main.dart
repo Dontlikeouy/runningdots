@@ -3,6 +3,7 @@ import 'package:runningdots/assets/colors.dart';
 import 'package:runningdots/assets/names.dart';
 import 'package:runningdots/assets/style.dart';
 import 'package:runningdots/page/visualizer.dart';
+import 'package:runningdots/widget/button.dart';
 
 void main() => runApp(const App());
 
@@ -22,7 +23,23 @@ class _AppState extends State<App> {
     return MaterialApp(
       title: _title,
       theme: ThemeData(
-          fontFamily: 'Inter', textTheme: const TextTheme(displayLarge: AppStyles.text, displayMedium: AppStyles.text, displaySmall: AppStyles.text, headlineLarge: AppStyles.text, headlineMedium: AppStyles.text, headlineSmall: AppStyles.text, titleLarge: AppStyles.text, titleMedium: AppStyles.text, titleSmall: AppStyles.text, bodyLarge: AppStyles.text, bodyMedium: AppStyles.text, bodySmall: AppStyles.text, labelLarge: AppStyles.text, labelMedium: AppStyles.text, labelSmall: AppStyles.text)),
+          fontFamily: 'Inter',
+          textTheme: const TextTheme(
+              displayLarge: AppStyles.whiteText,
+              displayMedium: AppStyles.whiteText,
+              displaySmall: AppStyles.whiteText,
+              headlineLarge: AppStyles.whiteText,
+              headlineMedium: AppStyles.whiteText,
+              headlineSmall: AppStyles.whiteText,
+              titleLarge: AppStyles.whiteText,
+              titleMedium: AppStyles.whiteText,
+              titleSmall: AppStyles.whiteText,
+              bodyLarge: AppStyles.whiteText,
+              bodyMedium: AppStyles.whiteText,
+              bodySmall: AppStyles.whiteText,
+              labelLarge: AppStyles.whiteText,
+              labelMedium: AppStyles.whiteText,
+              labelSmall: AppStyles.whiteText)),
       home: Home(),
     );
   }
@@ -36,7 +53,17 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  //Default page - Visualizer
   Widget _page = const Visualizer();
+  String _titleAppBar = AppNamesPage.visualizer;
+
+  void _updatePage(Widget page) {
+    setState(() {
+          _page = page;
+
+    });
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +71,13 @@ class _HomeState extends State<Home> {
       backgroundColor: AppColors.background,
       //Title
       appBar: AppBar(
-        toolbarHeight: 50,
+        toolbarHeight: 52,
         elevation: 0.0,
         shape: const Border(
-          bottom: BorderSide(color: AppColors.primary, width: 2),
+          bottom: BorderSide(
+            color: AppColors.primary,
+            width: 2,
+          ),
         ),
         backgroundColor: Colors.transparent,
         leading: Builder(
@@ -66,20 +96,20 @@ class _HomeState extends State<Home> {
             );
           },
         ),
-        title: const Text(
-          AppNames.title,
-          style: AppStyles.text,
+        title: Text(
+          _titleAppBar,
+          style: AppStyles.whiteText,
         ),
       ),
 
       //Content
-      body: Center(
-        child: _page,
-      ),
+      body: _page,
 
       //Sidebar
       drawer: Drawer(
         backgroundColor: AppColors.background,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -103,14 +133,14 @@ class _HomeState extends State<Home> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                 children: [
                   SideButton(
-                    "Визуализатор",
-                    () => Navigator.of(context).pop(),
+                    _titleAppBar = AppNamesPage.visualizer,
+                    () => _updatePage(const Visualizer()),
                     AppColors.primary,
                   ),
                   const SizedBox(height: 15),
                   SideButton(
                     "Настройки матрицы",
-                    () => _page = const Text("data"),
+                    () => _updatePage(const Button()),
                     AppColors.primary,
                   ),
                   const SizedBox(height: 15),
