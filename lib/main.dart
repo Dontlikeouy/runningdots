@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+
 import 'package:runningdots/assets/colors.dart';
 import 'package:runningdots/assets/names.dart';
-import 'package:runningdots/assets/style.dart';
+import 'package:runningdots/assets/style/style.dart';
 import 'package:runningdots/page/visualizer.dart';
 import 'package:runningdots/widget/button.dart';
 
@@ -21,6 +23,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return MaterialApp(
+      scrollBehavior: const MaterialScrollBehavior().copyWith(dragDevices: PointerDeviceKind.values.toSet()),
       title: _title,
       theme: ThemeData(
           fontFamily: 'Inter',
@@ -40,7 +43,7 @@ class _AppState extends State<App> {
               labelLarge: AppStyles.whiteText,
               labelMedium: AppStyles.whiteText,
               labelSmall: AppStyles.whiteText)),
-      home: Home(),
+      home: SafeArea(child: Home()),
     );
   }
 }
@@ -55,12 +58,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   //Default page - Visualizer
   Widget _page = const Visualizer();
-  String _titleAppBar = AppNamesPage.visualizer;
+  String _titleAppBar = AppPage.visualizer;
 
   void _updatePage(Widget page) {
     setState(() {
-          _page = page;
-
+      _page = page;
     });
     Navigator.of(context).pop();
   }
@@ -124,67 +126,25 @@ class _HomeState extends State<Home> {
                   ),
                 ),
               ),
-              child: const Text(AppNames.title),
+              child: const Text(AppName.title),
             ),
 
             //Page
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
                 children: [
-                  SideButton(
-                    _titleAppBar = AppNamesPage.visualizer,
-                    () => _updatePage(const Visualizer()),
-                    AppColors.primary,
+                  Button(
+                    child: Text(_titleAppBar = AppPage.visualizer),
+                    childPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    onTap: () => _updatePage(const Visualizer()),
+                    circleColor: AppColors.primary,
                   ),
-                  const SizedBox(height: 15),
-                  SideButton(
-                    "Настройки матрицы",
-                    () => _updatePage(const Button()),
-                    AppColors.primary,
-                  ),
-                  const SizedBox(height: 15),
-                  SideButton(
-                    "das",
-                    () => _page = const Text("data"),
-                    AppColors.additional,
-                  )
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class SideButton extends StatelessWidget {
-  final void Function() onTap;
-  final String textButton;
-  final Color colorCircle;
-  const SideButton(this.textButton, this.onTap, this.colorCircle, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      focusColor: Colors.transparent,
-      splashColor: Colors.transparent,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: colorCircle,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 5),
-          Text(textButton)
-        ],
       ),
     );
   }

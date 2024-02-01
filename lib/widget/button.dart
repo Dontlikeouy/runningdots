@@ -1,59 +1,83 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-
-/* 
-1) Граница 
-2) Закругления границы
-3) Оглавление кнопки
-4) Содержание кнопки
-5) Будет ли меняться содержание при нажатии
-6) Цвет кнопки
-
-*/
+import 'package:runningdots/assets/colors.dart';
 
 class Button extends StatefulWidget {
-  const Button({super.key, this.onTap});
+  const Button({
+    super.key,
+    this.title,
+    this.child,
+    this.onTap,
+    this.childPadding,
+    this.borderRadius = BorderRadius.zero,
+    this.border,
+    this.backgroundColor = Colors.transparent,
+    this.circleColor,
+  });
+  final Widget? title;
 
-  final Void Function()? onTap;
+  final void Function()? onTap;
+
+  final BorderRadius borderRadius;
+
+  final BoxBorder? border;
+  final Color? backgroundColor;
+  final Color? circleColor;
+
+  final EdgeInsets? childPadding;
+  final Widget? child;
 
   @override
   State<Button> createState() => _ButtonState();
 }
 
 class _ButtonState extends State<Button> {
-  bool isPressed = false;
-  Duration duration = Duration(milliseconds: 200);
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          isPressed = true;
-        });
-        Future.delayed(duration).then(
-          (value) => setState(
-            () {
-              isPressed = false;
-            },
-          ),
-        );
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          color: Colors.cyan,
-          child: AnimatedContainer(
-            duration: duration,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 15,
+    return IntrinsicHeight(
+      child: IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              child: widget.title,
             ),
-            decoration: BoxDecoration(
-              color: isPressed ? Color.fromARGB(100, 0, 0, 0) : Colors.transparent,
+            widget.title != null ? SizedBox(height: 5) : SizedBox(),
+            Ink(
+              decoration: BoxDecoration(
+                color: widget.backgroundColor,
+                border: widget.border,
+                borderRadius: widget.borderRadius,
+              ),
+              child: InkWell(
+                borderRadius: widget.borderRadius,
+                onTap: widget.onTap,
+                child: Container(
+                  padding: widget.childPadding,
+                  child: Row(
+                    children: [
+                      widget.circleColor != null
+                          ? Container(
+                              width: 12,
+                              height: 12,
+                              margin: EdgeInsets.only(right: 5),
+                              decoration: BoxDecoration(
+                                color: widget.circleColor,
+                                shape: BoxShape.circle,
+                              ),
+                            )
+                          : Container(),
+                      Expanded(
+                        child: Container(
+                          color: Colors.transparent,
+                          child: widget.child,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            child: Center(child: const Text("sad")),
-          ),
+          ],
         ),
       ),
     );
