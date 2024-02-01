@@ -49,3 +49,8 @@ app.*.map.json
 /.vscode
 COMMIT
 TODO
+lib/main copy.dart
+lib/assets/2023-09-20+20-17-08.apng
+lib/assets/2023-09-2020-17-08-ezgif.com-video-to-apng-converter.png
+lib/assets/anim.webm
+lib/assets/clock.png
